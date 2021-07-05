@@ -353,8 +353,8 @@ The main motivation of using dhall is:
 - type safety;
 - ease to generate a set of similar tests.
 
-## Writing tests
 
+## Writing tests
 
 ### `command`
 
