@@ -8,19 +8,25 @@
     inputs.flake-utils.follows = "flake-utils";
   };
 
-  outputs = { self, nixpkgs, idris, flake-utils }: flake-utils.lib.eachDefaultSystem (system:
+  outputs = { self, nixpkgs, idris, flake-utils }: flake-utils.lib.eachSystem ["x86_64-linux"] (system:
     let
       npkgs = import nixpkgs { inherit system; };
       idrisPkgs = idris.packages.${system};
       buildIdris = idris.buildIdris.${system};
-      pkgs = buildIdris {
+      pkgs = (buildIdris {
         projectName = "replica";
         src = ./.;
         idrisLibraries = [];
-      };
+      }) ;
     in rec {
       packages = pkgs // idrisPkgs;
-      defaultPackage = pkgs.build;
+      defaultPackage = pkgs.build.overrideAttrs(oa: {
+        buildPhase = ''
+          echo "Hello world"
+          make src/Replica/Version.idr
+          idris2 --build replica.ipkg
+        '';
+      });
       devShell = npkgs.mkShell {
         buildInputs = [ idrisPkgs.idris2 npkgs.rlwrap ];
         shellHook = ''
